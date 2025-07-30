@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="main-container">
+    <div class="flowchart">
+        <div class="flowchart-box">Request To Colocate</div>
+        <div class="flowchart-box">Collection of Temporary Key</div>
+        <div class="flowchart-box">Site Survey By Telco</div>
+        <div class="flowchart-box">Submission of TP & Return of Temporary Key</div>
+        <div class="flowchart-box">Evaluation of TP</div>
+        <div class="flowchart-box">Notice of TP Approval</div>
+        <div class="flowchart-box">Collection of Key</div>
+        <div class="flowchart-box">Issuance of AWO Template by KJS</div>
+        <div class="flowchart-box">Issuance of AWO by Telco</div>
+        <div class="flowchart-box">Mobilisation & Installation</div>
+        <div class="flowchart-box">Verificaton of Installation</div>
+    </div>
+
+    <div class="form">
+        <form>
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date">
+
+            <label for="client">Client</label>
+            <input type="text" id="client" name="client">
+
+            <label>Location Map</label>
+            <div id="map" style="height: 300px; width: 100%; border: 1px solid #ccc; border-radius: 8px;"></div><br>
+
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="">-- Select Status --</option>
+                <option value="Pending">-</option>
+                <option value="In Progress">-</option>
+                <option value="Completed">-</option>
+                <option value="On Hold">-</option>
+            </select>
+
+            <label for="comments">Comments</label>
+            <textarea id="comments" name="comments" placeholder="Enter your comments..."></textarea>
+
+            <label for="other">Other</label>
+            <input type="text" id="other" name="other">
+
+            <button type="submit" class="submit-button">Submit</button>
+        </form>
+    </div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+let map, marker;
+
+document.addEventListener("DOMContentLoaded", function () {
+    map = L.map('map').setView([3.139, 101.6869], 13); // Default center
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    map.on('click', function (e) {
+        placeMarker(e.latlng.lat, e.latlng.lng);
+    });
+});
+
+function placeMarker(lat, lng) {
+    if (marker) {
+        marker.setLatLng([lat, lng]);
+    } else {
+        marker = L.marker([lat, lng]).addTo(map);
+    }
+    map.setView([lat, lng], 15);
+
+    document.getElementById('latitude').value = lat.toFixed(6);
+    document.getElementById('longitude').value = lng.toFixed(6);
+}
+
+// Address → LatLng
+function geocodeAddress() {
+    const address = document.getElementById('address').value;
+    if (!address) {
+        alert("Please enter an address.");
+        return;
+    }
+
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.length === 0) {
+                alert("Address not found.");
+                return;
+            }
+            const lat = parseFloat(data[0].lat);
+            const lng = parseFloat(data[0].lon);
+            placeMarker(lat, lng);
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error finding location.");
+        });
+}
+
+// LatLng fields → update map
+function updateMapFromLatLng() {
+    const lat = parseFloat(document.getElementById('latitude').value);
+    const lng = parseFloat(document.getElementById('longitude').value);
+
+    if (!isNaN(lat) && !isNaN(lng)) {
+        placeMarker(lat, lng);
+    }
+}
+</script>
+{% endblock %}

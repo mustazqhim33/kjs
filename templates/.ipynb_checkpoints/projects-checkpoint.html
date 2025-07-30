@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Projects</h1>
+<div class="top-bar">
+    <input type="text" id="searchField" placeholder="Search..." onkeyup="searchTable()" />
+    <button onclick="location.href='/projects_detail/'" class="add-btn">Add New</button>
+</div>
+
+<table id="projectsTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Site Name</th>
+            <th>Status</th>
+            <th>Person In Charge</th>
+            <th>Select</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in projects %}
+        <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.site_name }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ item.person }}</td>
+            <td><button onclick="location.href='/projects_detail/{{ item.id }}'" class="select-btn">Select</button></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    function searchTable() {
+        const input = document.getElementById("searchField").value.toLowerCase();
+        const rows = document.querySelectorAll("#saqTable tbody tr");
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(input) ? "" : "none";
+        });
+    }
+</script>
+{% endblock %}

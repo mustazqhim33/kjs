@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>User</h1>
+<div class="top-bar">
+    <input type="text" id="searchField" placeholder="Search..." onkeyup="searchTable()" />
+    <button onclick="openModal()" class="add-btn">Add New</button>
+</div>
+<table id="usersTable">
+    <thead>
+        <tr>
+            <th>User ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Title</th>
+            <th>Group</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in users %}
+        <tr>
+            <td>{{ item.users_id }}</td>
+            <td>{{ item.users_name }}</td>
+            <td>{{ item.email }}</td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.group }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div id="addModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+
+    <form method="POST" action="/users">
+
+        <label>Name</label>
+        <input type="text" id="users_name" name="users_name">
+
+        <label>Email</label>
+        <input type="email" id="email" name="email">
+
+        <label>Title</label>
+        <input type="text" id="title" name="title">
+    
+        <label>Group</label>
+        <input type="text" id="group" name="group">
+
+        <label>Password</label>
+        <input type="password" id="password" name="password">
+
+        <button type="submit" class="submit-button">Submit</button>
+    </form>
+  </div>
+</div>
+
+<script>
+    function openModal() {
+      document.getElementById('addModal').style.display = 'block';
+    }
+   
+    function closeModal() {
+      document.getElementById('addModal').style.display = 'none';
+    }
+   
+    window.onclick = function(event) {
+      const modal = document.getElementById('addModal');
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+</script>
+{% endblock %}

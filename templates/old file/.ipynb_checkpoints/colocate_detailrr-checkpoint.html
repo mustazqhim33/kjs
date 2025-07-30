@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Header Frame -->
+<div class="header-frame" style="border: 2px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 20px; background-color: #f4f4f4;">
+    <h1 style="margin: 0; text-align: center;">CO-LOCATE</h1>
+</div>
+
+<div class="main-container">
+    <!-- Flowchart Steps -->
+    <div class="flowchart">
+        {% set steps = [
+            "Request To Colocate", "Collection of Temporary Key", "Site Survey By Telco",
+            "Submission of TP & Return of Temporary Key", "Evaluation of TP", "Notice of TP Approval",
+            "Collection of Key", "Issuance of AWO Template by KJS", "Issuance of AWO by Telco",
+            "Mobilisation & Installation", "Verificaton of Installation"
+        ] %}
+        {% for step in steps %}
+        <button type="button" class="flowchart-box" data-step="{{ loop.index }}">{{ step }}</button>
+        {% endfor %}
+    </div>
+
+    <!-- Form -->
+    <div class="form">
+        <form id="stepForm">
+            <input type="hidden" id="step_number" name="step_number" />
+            <div id="dynamicFields"></div>
+            <button type="submit" class="submit-button" style="display: none;">Submit</button>
+        </form>
+    </div>
+</div>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Script -->
+<script>
+let map, marker;
+
+function placeMarker(lat, lng) {
+    if (marker) {
+        marker.setLatLng([lat, lng]);
+    } else {
+        marker = L.marker([lat, lng]).addTo(map);
+    }
+    map.setView([lat, lng], 15);
+    document.getElementById('latitude').value = lat.toFixed(6);
+    document.getElementById('longitude').value = lng.toFixed(6);
+}
+
+function geocodeAddress() {
+    const address = document.getElementById('address').value;
+    if (!address) {
+        alert("Please enter an address.");
+        return;
+    }
+
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.length === 0) {
+                alert("Address not found.");
+                return;
+            }
+            const lat = parseFloat(data[0].lat);
+            const lng = parseFloat(data[0].lon);
+            placeMarker(lat, lng);
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error finding location.");
+        });
+}
+
+function updateMapFromLatLng() {
+    const lat = parseFloat(document.getElementById('latitude').value);
+    const lng = parseFloat(document.getElementById('longitude').value);
+    if (!isNaN(lat) && !isNaN(lng)) {
+        placeMarker(lat, lng);
+    }
+}
+
+function initMap() {
+    if (map) map.remove();
+    map = L.map('map').setView([3.139, 101.6869], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    map.on('click', function (e) {
+        placeMarker(e.latlng.lat, e.latlng.lng);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll(".flowchart-box");
+    const dynamicFields = document.getElementById("dynamicFields");
+    const submitButton = document.querySelector(".submit-button");
+
+    buttons.forEach(button => {
+        button.addEventListener("click", () => {
+            buttons.forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+
+            const step = button.dataset.step;
+            document.getElementById("step_number").value = step;
+
+            dynamicFields.innerHTML = `
+                <!-- Row: Date + Project Name -->
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1;">
+                        <label>Date</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Project Name</label>
+                        <input type="text" id="project_name" name="project_name" placeholder="Enter project name">
+                    </div>
+                </div>
+
+                <!-- Row: Client + PIC -->
+                <div style="display: flex; gap: 20px; margin-top: 10px;">
+                    <div style="flex: 1;">
+                        <label>Client</label>
+                        <input type="text" id="client" name="client" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Person In Charge:</label>
+                        <div class="dropdown">
+                            <input type="text" id="userSearch" placeholder="Search users..." autocomplete="off">
+                            <input type="hidden" name="person_in_charge_id" id="selectedUserId">
+                            <div id="userDropdown" class="dropdown-content">
+                                {% for user in users %}
+                                    <div data-id="{{ user.users_id }}">{{ user.users_id }} - {{ user.users_name }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row: Address, Locate, Lat/Lng -->
+                <div style="margin-top: 10px;">
+                    <label for="address">Address</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="address" name="address" placeholder="Enter address" style="flex: 2;">
+                        <button type="button" class="locate-button" onclick="geocodeAddress()">Locate</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 5px;">
+                        <input type="text" id="latitude" name="latitude" placeholder="Latitude" style="flex: 1;" onblur="updateMapFromLatLng()">
+                        <input type="text" id="longitude" name="longitude" placeholder="Longitude" style="flex: 1;" onblur="updateMapFromLatLng()">
+                    </div>
+                </div>
+
+                <!-- Full Width Map -->
+                <div style="margin-top: 15px;">
+                    <label>Location Map</label>
+                    <div id="map" style="height: 300px; width: 100%; border: 1px solid #ccc; border-radius: 8px;"></div>
+                </div>
+
+                <!-- Status Dropdown -->
+                <div style="margin-top: 15px;">
+                    <label>Status</label>
+                    <select id="status" name="status" required>
+                        <option value="">-- Select Status --</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="On Hold">On Hold</option>
+                    </select>
+                </div>
+
+                <!-- Full Width File Upload -->
+                <div style="margin-top: 15px;">
+                    <label>Upload File</label>
+                    <input type="file" id="file" name="file">
+                </div>
+
+                <!-- Full Width Comments -->
+                <div style="margin-top: 15px;">
+                    <label>Comments</label>
+                    <textarea id="comments" name="comments" placeholder="Enter your comments..." style="width: 100%;"></textarea>
+                </div>
+
+                <!-- Other Field -->
+                <div style="margin-top: 15px;">
+                    <label>Other</label>
+                    <input type="text" id="other" name="other" style="width: 100%;">
+                </div>
+            `;
+
+            submitButton.style.display = "inline-block";
+
+            // User dropdown logic
+            const searchInput = document.getElementById("userSearch");
+            const dropdown = document.getElementById("userDropdown");
+            const hiddenInput = document.getElementById("selectedUserId");
+
+            searchInput.addEventListener("focus", () => {
+                dropdown.style.display = "block";
+            });
+
+            searchInput.addEventListener("input", () => {
+                const filter = searchInput.value.toLowerCase();
+                const items = dropdown.getElementsByTagName("div");
+                for (let item of items) {
+                    const text = item.textContent || item.innerText;
+                    item.style.display = text.toLowerCase().includes(filter) ? "" : "none";
+                }
+            });
+
+            dropdown.addEventListener("click", (e) => {
+                if (e.target && e.target.nodeName === "DIV") {
+                    const selectedText = e.target.textContent;
+                    const selectedId = e.target.getAttribute("data-id");
+                    searchInput.value = selectedText;
+                    hiddenInput.value = selectedId;
+                    dropdown.style.display = "none";
+                }
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest(".dropdown")) {
+                    dropdown.style.display = "none";
+                }
+            });
+
+            setTimeout(() => initMap(), 0);
+        });
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ active_tab|capitalize }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo-container">
+            <img src="{{ url_for('static', filename='KJS-logo.png') }}" class="sidebar-logo">
+        </div>
+
+        <a href="/dashboard" class="tab {% if active_tab == 'dashboard' %}active{% endif %}">
+            <i class="fas fa-home"></i> Home
+        </a>
+
+        <div class="tab {% if active_tab in ['operation', 'colocate'] %}active{% endif %}" onclick="toggleSubNav(this)">
+            <a href="#" class="dropdown-toggle">
+                <i class="fas fa-broadcast-tower"></i> Existing Tower
+            </a>
+            <ul class="sub-nav">
+                <li class="{% if active_tab == 'operation' %}active{% endif %}">
+                    <a href="operation"><i class="fas fa-cogs"></i> Operation</a>
+                </li>
+                <li class="{% if active_tab == 'colocate' %}active{% endif %}">
+                    <a href="colocate"><i class="fas fa-share-alt"></i> Colocate</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab {% if active_tab in ['saq', 'projects'] %}active{% endif %}" onclick="toggleSubNav(this)">
+            <a href="#" class="dropdown-toggle">
+                <i class="fas fa-plus-circle"></i> New Tower
+            </a>
+            <ul class="sub-nav">
+                <li class="{% if active_tab == 'saq' %}active{% endif %}">
+                    <a href="saq"><i class="fas fa-file-alt"></i> SAQ</a>
+                </li>
+                <li class="{% if active_tab == 'projects' %}active{% endif %}">
+                    <a href="projects"><i class="fas fa-project-diagram"></i> Projects</a>
+                </li>
+            </ul>
+        </div>
+
+        <a href="/users" class="tab {% if active_tab == 'users' %}active{% endif %}">
+            <i class="fas fa-users-cog"></i> Users Management
+        </a>
+   
+        <a href="/logout" class="tab">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+
+    <div class="content">
+        <header class="page-header">
+            <h1>
+                {{
+                {
+                'dashboard': 'Home',
+                'operation': 'Operation',
+                'colocate': 'Colocate',
+                'saq': 'SAQ',
+                'projects': 'Projects',
+                'users': 'Users Management'
+                }[active_tab] if active_tab in ['dashboard','operation','colocate','saq','projects','users'] else 'KJS Dashboard'
+                }}
+            </h1>
+            <div class="header-right">
+                <label for="to-date">To Date</label>
+                <input type="date" id="to-date" name="to-date" />
+            </div>
+        </header>
+       
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- JS -->
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+      function toggleSubNav(tab) {
+        // Collapse all other tabs first (optional)
+        document.querySelectorAll('.tab.has-sub').forEach(t => {
+          if (t !== tab) {
+            t.classList.remove('expanded');
+          }
+        });
+   
+        // Toggle the clicked one
+        tab.classList.toggle('expanded');
+      }
+
+        // Set current date in "to-date" input
+      window.addEventListener('DOMContentLoaded', () => {
+        const dateInput = document.getElementById('to-date');
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+      });
+    </script>
+
+</body>
+</html>

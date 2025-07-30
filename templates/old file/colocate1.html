@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>COLOCATE</h1>
+<div class="top-bar">
+    <input type="text" id="searchField" placeholder="Search..." onkeyup="searchTable()" />
+    <button onclick="openModal()" class="add-btn">Add New</button>
+</div>
+
+<table id="colocateTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Site Name</th>
+            <th>Status</th>
+            <th>Person In Charge</th>
+            <th>Select</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in colocate %}
+        <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.site_name }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ item.person }}</td>
+            <td><button onclick="location.href='/colocate_detail/{{ item.id }}'" class="select-btn">Select</button></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="addModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+
+    <form method="POST" enctype="multipart/form-data">
+        <label for="date">Date</label>
+        <input type="date" id="date" name="date">
+        
+        <label for="project_name">Project Name</label>
+        <input type="text" id="project_name" name="project_name" placeholder="Enter project name">
+        
+        <label for="client">Client</label>
+        <input type="text" id="client" name="client" placeholder="Enter client">
+
+        <label>Latitude</label>
+        <input type="text" id="latitude" name="latitude" placeholder="Latitude" onblur="updateMapFromLatLng()">
+
+        <label>Longitude</label>
+        <input type="text" id="longitude" name="longitude" placeholder="Longitude" onblur="updateMapFromLatLng()">
+
+        <label for="status">Status</label>
+        <select id="status" name="status">
+            <option value="">-- Select Status --</option>
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In_Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="On Hold">On-Hold</option>
+        </select>
+
+        <label for="file">Upload File</label>
+        <input type="file" id="file" name="file">
+
+        <label for="comments">Comments</label>
+        <textarea id="comments" name="comments" placeholder="Enter your comments..."></textarea>
+
+        <label for="other">Other</label>
+        <input type="text" id="other" name="other">
+
+        <button type="submit" class="submit-button">Submit</button>
+    </form>
+  </div>
+</div>
+
+<script>
+    function searchTable() {
+        const input = document.getElementById("searchField").value.toLowerCase();
+        const rows = document.querySelectorAll("#colocateTable tbody tr");
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(input) ? "" : "none";
+        });
+    }
+
+    function openModal() {
+      document.getElementById('addModal').style.display = 'block';
+    }
+    
+    function closeModal() {
+      document.getElementById('addModal').style.display = 'none';
+    }
+    
+    window.onclick = function(event) {
+      const modal = document.getElementById('addModal');
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+</script>
+
+{% endblock %}

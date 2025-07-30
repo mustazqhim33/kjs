@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-grid">
+    <div class="dashboard-box" id="map-wrapper">
+        <div id="map" style="height: 400px; width: 100%; border: 1px solid #ccc; border-radius: 8px;"></div>
+    </div>
+   
+    <div class="dashboard-box">
+        <h2>Total Tower</h2>
+        <canvas id="towerBarChart" style="width: 100%; height: 300px;"></canvas>
+    </div>
+
+    <div class="dashboard-box">
+        <div class="section-header">
+            <h3>Selangor Projects</h3>
+            <div class="dropdown-wrapper">
+                <label for="selangorChartSelector" style="display: none;">Select Chart:</label>
+                <select id="selangorChartSelector" class="project-dropdown">
+                    <option value="pie">Pie</option>
+                    <option value="colocate">Colocate</option>
+                    <option value="saq">SAQ</option>
+                    <option value="projects">Projects</option>
+                </select>
+            </div>
+        </div>
+       
+        <div class="chart-row">
+            <div id="s_pie_chart_wrapper">
+                <canvas id="s_pieChart"></canvas>
+            </div>
+            <div id="s_colocate_chart_wrapper" style="display: none;">
+                <canvas id="s_colocate_chart" ></canvas>
+            </div>
+            <div id="s_saq_chart_wrapper" style="display: none;">
+                <canvas id="s_saq_chart" ></canvas>
+            </div>
+            <div id="s_projects_chart_wrapper" style="display: none;">
+                <canvas id="s_projects_chart" ></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-box">
+        <div class="section-header">
+            <h3>Negeri Sembilan Projects</h3>
+            <div class="dropdown-wrapper">
+                <label for="nsChartSelector" style="display: none;">Select Chart:</label>
+                <select id="nsChartSelector" class="project-dropdown">
+                    <option value="pie">Pie</option>
+                    <option value="colocate">Colocate</option>
+                    <option value="saq">SAQ</option>
+                    <option value="projects">Projects</option>
+                </select>
+            </div>
+        </div>
+        <div class="chart-row">
+            <div id="n_pie_chart_wrapper">
+                <canvas id="n_pieChart"></canvas>
+            </div>
+            <div id="n_colocate_chart_wrapper" style="display:none;">
+                <canvas id="n_colocate_chart"></canvas>
+            </div>
+            <div id="n_saq_chart_wrapper" style="display:none;">
+                <canvas id="n_saq_chart"></canvas>
+            </div>
+            <div id="n_projects_chart_wrapper" style="display:none;">
+                <canvas id="n_projects_chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Leaflet Map
+        const map = L.map('map').setView([3.139, 101.6869], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        map.on('click', function (e) {
+            L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+        });
+       
+        // Total Towers Bar Chart
+        new Chart(document.getElementById('towerBarChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Selangor', 'Negeri Sembilan'],
+                datasets: [{
+                    label: 'Number of Towers',
+                    data: [15, 8],
+                    backgroundColor: ['#4caf50', '#2196f3']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Total Towers by State'
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+       
+        // === PIE CHART: Selangor ===
+        new Chart(document.getElementById('s_pieChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Colocate', 'SAQ', 'Project'],
+                datasets: [{
+                    data: [20, 15, 25],
+                    backgroundColor: ['#4caf50', '#2196f3', '#ff9800']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Selangor - Overview'
+                    },
+                    legend: { position: 'top' }
+                }
+            }
+        });
+
+        // === COLOCATE BAR CHART ===
+        new Chart(document.getElementById('s_colocate_chart'), {
+            type: 'bar',
+            data: {
+                labels: [
+                    'Request To Colocate', 'Site Survey By Telco', 'Evaluation of TP',
+                    'TELCO Request', 'Google search', 'Join site survey',
+                    'Site Visit', 'Submission Regulator', 'PBT Approval'
+                ],
+                datasets: [{
+                    label: 'Total Projects',
+                    data: [5, 4, 3, 4, 2, 3, 6, 4, 5],
+                    backgroundColor: '#4caf50'
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Selangor - Co-locate'
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+   
+        new Chart(document.getElementById('s_saq_chart'), {
+            type: 'bar',
+            data: {
+                labels: [
+                    'TELCO Request', 'Google search', 'Site Survey', 'Produce PSR', 'Sending PSR to telco via email',
+                    'Telco Response on KJS PTR', 'Arrangement to join site survey with telco', 'Join site survey',
+                    'Produce TSSR', 'Sending TSSR to telco via email','Proposal to landowner, AJK Surau/Masjid', 'Hand over to Project Department'
+                ],
+                datasets: [{
+                    label: 'In Progress',
+                    data: [2, 3, 1, 4, 2, 6, 5, 4, 3, 8, 1, 5],
+                    backgroundColor: '#2196f3'
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Selangor - SAQ'
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+   
+        new Chart(document.getElementById('s_projects_chart'), {
+            type: 'bar',
+            data: {
+                labels: [
+                    "Site Visit","Compilation of Land Survey and Soil Investigation Report","Consultant to Provide Preliminary Drawings", "Submission Regulator",
+                    "Submission of Variation Order to Telco","PBT Approval","Verification of Contractor's Quotation/Work Instruction","Submission of Work Schedule",
+                    "Preparation of Material","Monitor Progress at Site","Weeeky Progress Report","Pre-Handover","Notification of Handover","Attend Handover",
+                    "Telco: Issuance of Defect List to KJS","Issuance of Reminder-Defect List/Rectification","Defect Clearance","Submission of Defect Clearance Photo",
+                    "Issuance of CPC","Request Authorized Work Order","Issuance of Authorized Work Order","Invoices","Drawdown"
+                ],
+                datasets: [{
+                    label: 'In Progress',
+                    data: [2, 3, 1, 4, 2, 6, 5, 4, 3, 8, 1, 5, 2, 3, 1, 4, 2, 6, 5, 4, 3, 8, 1],
+                    backgroundColor: '#ff9800'
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Selangor - Projects'
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+       
+        // Negeri Sembilan Pie Chart
+        new Chart(document.getElementById('n_pieChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Colocate', 'SAQ', 'Project'],
+                datasets: [{
+                    data: [10, 7, 13],  // example data, replace with your actual
+                    backgroundColor: ['#4caf50', '#2196f3', '#ff9800']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Negeri Sembilan - Overview' },
+                    legend: { position: 'top' }
+                }
+            }
+        });
+
+        // Negeri Sembilan Colocate Bar Chart
+        new Chart(document.getElementById('n_colocate_chart'), {
+          type: 'bar',
+            data: {
+                labels: [
+                    'Request To Colocate', 'Site Survey By Telco', 'Evaluation of TP',
+                    'TELCO Request', 'Google search', 'Join site survey',
+                    'Site Visit', 'Submission Regulator', 'PBT Approval'
+                ],
+                datasets: [{
+                    label: 'Total Projects',
+                    data: [3, 2, 1, 2, 1, 2, 4, 3, 3],  // example data
+                    backgroundColor: '#4caf50'
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Negeri Sembilan - Co-locate' },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Negeri Sembilan SAQ Bar Chart
+        new Chart(document.getElementById('n_saq_chart'), {
+          type: 'bar',
+          data: {
+            labels: [
+              'TELCO Request', 'Google search', 'Site Survey', 'Produce PSR', 'Sending PSR to telco via email',
+              'Telco Response on KJS PTR', 'Arrangement to join site survey with telco', 'Join site survey',
+              'Produce TSSR', 'Sending TSSR to telco via email',
+              'Proposal to landowner, AJK Surau/Masjid', 'Hand over to Project Department'
+            ],
+            datasets: [{
+              label: 'In Progress',
+              data: [1, 2, 1, 3, 1, 4, 3, 3, 2, 5, 1, 3], // example data
+              backgroundColor: '#2196f3'
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+              title: { display: true, text: 'Negeri Sembilan - SAQ' },
+              legend: { display: false }
+            },
+            scales: {
+              x: { beginAtZero: true }
+            }
+          }
+        });
+
+        // Negeri Sembilan Projects Bar Chart
+        new Chart(document.getElementById('n_projects_chart'), {
+          type: 'bar',
+          data: {
+            labels: [
+              "Site Visit","Compilation of Land Survey and Soil Investigation Report","Consultant to Provide Preliminary Drawings", "Submission Regulator",
+              "Submission of Variation Order to Telco","PBT Approval","Verification of Contractor's Quotation/Work Instruction","Submission of Work Schedule",
+              "Preparation of Material","Monitor Progress at Site","Weeeky Progress Report","Pre-Handover","Notification of Handover","Attend Handover",
+              "Telco: Issuance of Defect List to KJS","Issuance of Reminder-Defect List/Rectification","Defect Clearance","Submission of Defect Clearance Photo",
+              "Issuance of CPC","Request Authorized Work Order","Issuance of Authorized Work Order","Invoices","Drawdown"
+            ],
+            datasets: [{
+              label: 'In Progress',
+              data: [1, 2, 1, 3, 1, 4, 3, 3, 2, 5, 1, 3, 1, 2, 1, 3, 1, 4, 3, 3, 2, 5, 1], // example data
+              backgroundColor: '#ff9800'
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+              title: { display: true, text: 'Negeri Sembilan - Projects' },
+              legend: { display: false }
+            },
+            scales: {
+              x: { beginAtZero: true }
+            }
+          }
+        });
+   
+        // === DROPDOWN EVENT HANDLER ===
+        const chartWrappers = {
+            pie: "s_pie_chart_wrapper",
+            colocate: "s_colocate_chart_wrapper",
+            saq: "s_saq_chart_wrapper",
+            projects: "s_projects_chart_wrapper"
+        };
+       
+        document.getElementById("selangorChartSelector").addEventListener("change", function () {
+            const selected = this.value;
+            Object.entries(chartWrappers).forEach(([key, wrapperId]) => {
+                document.getElementById(wrapperId).style.display = key === selected ? "block" : "none";
+            });
+        });
+       
+        // Trigger default
+        document.getElementById("selangorChartSelector").value = "pie";
+        document.getElementById("selangorChartSelector").dispatchEvent(new Event("change"));
+   
+          const nsChartWrappers = {
+              pie: "n_pie_chart_wrapper",
+              colocate: "n_colocate_chart_wrapper",
+              saq: "n_saq_chart_wrapper",
+              projects: "n_projects_chart_wrapper"
+            };
+   
+            document.getElementById("nsChartSelector").addEventListener("change", function () {
+              const selected = this.value;
+              Object.entries(nsChartWrappers).forEach(([key, wrapperId]) => {
+                document.getElementById(wrapperId).style.display = key === selected ? "block" : "none";
+              });
+            });
+           
+            // Trigger default
+            document.getElementById("nsChartSelector").value = "pie";
+            document.getElementById("nsChartSelector").dispatchEvent(new Event("change"));
+     
+  }); // CLOSES document.addEventListener
+</script>
+
+{% endblock %}

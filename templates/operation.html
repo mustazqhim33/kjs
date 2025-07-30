@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<div class="top-bar">
+    <input type="text" id="searchField" placeholder="Search..." onkeyup="searchTable()" />
+</div>
+
+<table id="operationTable">
+    <thead>
+        <tr>
+            <th>Tower</th>
+            <th>Occupant</th>
+            <th>Frequency Band</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tower in operation %}
+            {% for record in tower.records %}
+                <tr>
+                    {% if loop.first %}
+                        <td rowspan="{{ tower.records|length }}">{{ tower.tower }}</td>
+                    {% endif %}
+                    <td>{{ record.occupant }}</td>
+                    <td>{{ record.frequency }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    function searchTable() {
+        const input = document.getElementById("searchField").value.toLowerCase();
+        const rows = document.querySelectorAll("#saqTable tbody tr");
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(input) ? "" : "none";
+        });
+    }
+</script>
+
+{% endblock %}
